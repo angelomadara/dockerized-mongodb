@@ -8,14 +8,25 @@ const uri = process.env.MONGO_URI || 'mongodb://admin:VaultTecSecurePass123@mong
 const client = new MongoClient(uri);
 
 async function startApp() {
-    try {
-        await client.connect();
-        console.log('Connected to MongoDB Replica Set');
-    } catch (e) {
-        console.error('Initial connection error:', e);
+    const maxRetries = 10;
+    const retryDelay = 3000;
+
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            await client.connect();
+            console.log('Connected to MongoDB Replica Set');
+            app.listen(3000, () => console.log('Atomic App running on port 3000'));
+            return;
+        } catch (e) {
+            console.error(`Connection attempt ${i + 1}/${maxRetries} failed:`, e.message);
+            if (i < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
+            }
+        }
     }
+    console.error('Failed to connect to MongoDB after multiple retries. Exiting.');
+    process.exit(1);
 }
-startApp();
 
 app.get('/health', (req, res) => res.send('Sighting check: App is alive.'));
 
@@ -48,4 +59,4 @@ app.post('/transaction', async (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log('Atomic App running on port 3000'));
+startApp();

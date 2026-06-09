@@ -7,7 +7,20 @@ This project implements a fully dockerized environment consisting of a MongoDB R
 - **Express App**: Node.js application using the `mongodb` driver to execute atomic session-based writes.
 - **Nginx**: Reverse proxy mapping port `8081` to the Express app.
 
-## 🚀 Deployment
+## � Prerequisites
+
+### Generate the MongoDB KeyFile
+A keyFile is required for replica set internal authentication. Generate it before starting the stack:
+
+```bash
+mkdir -p mongo-key && openssl rand -base64 756 > mongo-key/mongo-keyfile && chmod 400 mongo-key/mongo-keyfile
+```
+
+This creates a 756-byte key at `./mongo-key/mongo-keyfile` with restricted permissions (`400`).
+
+---
+
+## �🚀 Deployment
 
 ### 1. Start the Stack
 ```bash
@@ -19,7 +32,7 @@ docker compose up -d
 ### 2. Access Points
 - **Nginx Proxy**: `http://localhost:8081`
 - **Express App (Direct)**: `http://localhost:3000`
-- **MongoDB**: `localhost:27017`
+- **MongoDB**: `localhost:27018`
 
 ---
 

@@ -1,30 +1,34 @@
-version: '3.8'
-
 services:
   # MongoDB Replica Set Node
   mongodb:
-    image: mongo:latest
+    image: mongo:8.0.23
     container_name: mongodb_service
     restart: always
     ports:
-      - "27017:27017"
+      - "27018:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=VaultTecSecurePass123
     volumes:
       - mongo_data:/data/db
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+      - ./mongo-key/mongo-keyfile:/etc/mongo-keyfile:ro
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--keyFile", "/etc/mongo-keyfile"]
 
   # Init-replica: Temporary container to run rs.initiate()
   mongodb-init:
-    image: mongo:latest
+    image: mongo:8.0.23
     container_name: mongodb_init
     depends_on:
       - mongodb
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=VaultTecSecurePass123
-    entrypoint: [ "/bin/bash", "-c", "sleep 10 && mongosh -u admin -p VaultTecSecurePass123 --eval \"rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongodb:27017'}]})\" && sleep 5" ]
+    entrypoint:
+      [
+        "/bin/bash",
+        "-c",
+        'sleep 10 && mongosh --host mongodb -u admin -p VaultTecSecurePass123 --eval "rs.initiate({_id: ''rs0'', members: [{_id: 0, host: ''mongodb:27017''}]})" && echo "Waiting for primary election..." && for i in $(seq 1 30); do mongosh --host mongodb -u admin -p VaultTecSecurePass123 --quiet --eval "rs.status().members[0].stateStr === ''PRIMARY''" 2>/dev/null | grep -q true && echo "Primary elected!" && break; sleep 2; done'
+      ]
 
   # Express application
   app:
@@ -35,6 +39,7 @@ services:
       - MONGO_URI=mongodb://admin:VaultTecSecurePass123@mongodb:27017/?authSource=admin&replicaSet=rs0
     depends_on:
       - mongodb
+      - mongodb-init
     ports:
       - "3000:3000"
 
