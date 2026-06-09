@@ -34,6 +34,15 @@ docker compose up -d
 - **Express App (Direct)**: `http://localhost:3000`
 - **MongoDB**: `localhost:27018`
 
+### 3. Connect with MongoDB Compass
+Use the following connection string to connect via MongoDB Compass from your host machine:
+
+```
+mongodb://admin:VaultTecSecurePass123@localhost:27018/?authSource=admin&directConnection=true
+```
+
+> **Note:** The `directConnection=true` parameter is required because the replica set advertises `mongodb:27017` as its host (the Docker internal hostname), which your host machine can't resolve. This flag tells Compass to connect directly to `localhost:27018` without attempting to look up other replica set members. Do **not** include `replicaSet=rs0` together with `directConnection=true` — the two options are incompatible.
+
 ---
 
 ## 🧪 Testing Atomic Transactions
