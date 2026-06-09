@@ -1,72 +1,65 @@
-# 📦 Dockerized MongoDB Sentinel
+# ⚛️ Atomic MongoDB Replica Set Stack
 
-A robust, production-ready MongoDB deployment utilizing Docker Compose, featuring persistent storage and root authentication.
+This project implements a fully dockerized environment consisting of a MongoDB Replica Set (required for transactions), an ExpressJs application demonstrating atomic operations, and an Nginx reverse proxy.
 
-## 🚀 Quick Start
+## 🏗 Architecture
+- **MongoDB**: Running as a Single-Node Replica Set (`rs0`) to enable Multi-Document Transactions.
+- **Express App**: Node.js application using the `mongodb` driver to execute atomic session-based writes.
+- **Nginx**: Reverse proxy mapping port `8081` to the Express app.
 
-### 1. Deployment
-Navigate to the project directory and spin up the container:
+## 🚀 Deployment
+
+### 1. Start the Stack
 ```bash
-cd ~/dockerized-mongodb
+cd ~/github/dockerized-mongodb
+docker compose up -d
+```
+*Note: The `mongodb-init` container runs once to initialize the replica set and then exits. This is normal.*
+
+### 2. Access Points
+- **Nginx Proxy**: `http://localhost:8081`
+- **Express App (Direct)**: `http://localhost:3000`
+- **MongoDB**: `localhost:27017`
+
+---
+
+## 🧪 Testing Atomic Transactions
+
+### Verify Health
+Check if the proxy and app are communicating:
+```bash
+curl http://localhost:8081/health
+```
+*Expected: `Sighting check: App is alive.`*
+
+### Execute Atomic Write
+The app has a specific endpoint to test transactions. It updates two accounts (`A` and `B`) atomically. If one fails, neither are updated.
+```bash
+curl -X POST http://localhost:8081/transaction
+```
+*Expected: `{"status": "Success", "message": "Atomic update complete"}`*
+
+---
+
+## 🛠 Debugging & Maintenance
+
+### Inspecting the Replica Set
+To verify the replica set status:
+```bash
+docker exec -it mongodb_service mongosh -u admin -p VaultTecSecurePass123 --eval "rs.status()"
+```
+
+### Logs
+```bash
+docker compose logs -f
+```
+
+### Resetting the Environment
+To wipe all data (including volumes) and restart:
+```bash
+docker compose down -v
 docker compose up -d
 ```
 
-### 2. Connection Details
-- **Host**: `localhost` (from host machine) or `mongodb_service` (within Docker network)
-- **Port**: `27017`
-- **Username**: `admin`
-- **Password**: `VaultTecSecurePass123`
-- **Recommended Connection String**:
-  `mongodb://admin:VaultTecSecurePass123@localhost:27017/?retryWrites=false`
-
 ---
-
-## 🛠 Operations Guide
-
-### Accessing MongoDB Inside the Container
-To enter the database shell directly from your terminal:
-```bash
-docker exec -it mongodb_service mongosh -u admin -p VaultTecSecurePass123
-```
-
-### Testing the Connection
-Once inside the shell, run the following command to verify the database is responsive:
-```javascript
-db.adminCommand('ping')
-```
-*Expected result: `{ ok: 1 }`*
-
-### Data Persistence
-Data is stored in a named Docker volume `dockerized-mongodb_mongo_data`. This ensures that:
-- **Restarting the container** does NOT delete data.
-- **Stopping the container** does NOT delete data.
-- **Updating the image** does NOT delete data.
-
-To completely wipe the database and start fresh:
-```bash
-docker compose down -v
-```
-
----
-
-## 🔍 Debugging & Troubleshooting
-
-### Checking Logs
-If the container fails to start or behaves unexpectedly, inspect the logs:
-```bash
-docker compose logs mongodb
-```
-
-### Monitoring Resource Usage
-Check CPU and Memory consumption in real-time:
-```bash
-docker stats mongodb_service
-```
-
-### Common Issues
-- **Authentication Failed**: Ensure you are using the credentials defined in `docker-compose.yml`. Note: Credentials only take effect during the *initial* volume creation.
-- **Port Collision**: If port `27017` is already in use, change the left side of the `ports` mapping in `docker-compose.yml` (e.g., `"27018:27017"`).
-- **Retryable Writes Error**: If your application complains about `retryWrites`, ensure you have appended `?retryWrites=false` to your connection string.
-
----
-*Project maintained by PIP-BOY (Vault-Tec Personal Monitoring Unit).*
+*Maintained by PIP-BOY. All systems operational. ☢️*

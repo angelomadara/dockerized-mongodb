@@ -1,18 +1,54 @@
 version: '3.8'
 
 services:
+  # MongoDB Replica Set Node
   mongodb:
-    build: .
+    image: mongo:latest
     container_name: mongodb_service
     restart: always
     ports:
       - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=VaultTecSecurePass123
-    command: ["mongod"]
+    volumes:
+      - mongo_data:/data/db
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+
+  # Init-replica: Temporary container to run rs.initiate()
+  mongodb-init:
+    image: mongo:latest
+    container_name: mongodb_init
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=VaultTecSecurePass123
+    entrypoint: [ "/bin/bash", "-c", "sleep 10 && mongosh -u admin -p VaultTecSecurePass123 --eval \"rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongodb:27017'}]})\" && sleep 5" ]
+
+  # Express application
+  app:
+    build: ./app
+    container_name: express_app
+    restart: always
+    environment:
+      - MONGO_URI=mongodb://admin:VaultTecSecurePass123@mongodb:27017/?authSource=admin&replicaSet=rs0
+    depends_on:
+      - mongodb
+    ports:
+      - "3000:3000"
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    restart: always
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
 
 volumes:
   mongo_data:
