@@ -8,7 +8,7 @@ services:
       - "27018:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=VaultTecSecurePass123
+      - MONGO_INITDB_ROOT_PASSWORD=tTFttAuchFoCEHttNHLfszk6
     volumes:
       - mongo_data:/data/db
       - ./mongo-key/mongo-keyfile:/etc/mongo-keyfile:ro
@@ -22,12 +22,12 @@ services:
       - mongodb
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=VaultTecSecurePass123
+      - MONGO_INITDB_ROOT_PASSWORD=tTFttAuchFoCEHttNHLfszk6
     entrypoint:
       [
         "/bin/bash",
         "-c",
-        'sleep 10 && mongosh --host mongodb -u admin -p VaultTecSecurePass123 --eval "rs.initiate({_id: ''rs0'', members: [{_id: 0, host: ''mongodb:27017''}]})" && echo "Waiting for primary election..." && for i in $(seq 1 30); do mongosh --host mongodb -u admin -p VaultTecSecurePass123 --quiet --eval "rs.status().members[0].stateStr === ''PRIMARY''" 2>/dev/null | grep -q true && echo "Primary elected!" && break; sleep 2; done'
+        'sleep 10 && mongosh --host mongodb -u admin -p tTFttAuchFoCEHttNHLfszk6 --eval "rs.initiate({_id: ''rs0'', members: [{_id: 0, host: ''mongodb:27017''}]})" && echo "Waiting for primary election..." && for i in $(seq 1 30); do mongosh --host mongodb -u admin -p tTFttAuchFoCEHttNHLfszk6 --quiet --eval "rs.status().members[0].stateStr === ''PRIMARY''" 2>/dev/null | grep -q true && echo "Primary elected!" && break; sleep 2; done'
       ]
 
   # Express application
@@ -36,7 +36,7 @@ services:
     container_name: express_app
     restart: always
     environment:
-      - MONGO_URI=mongodb://admin:VaultTecSecurePass123@mongodb:27017/?authSource=admin&replicaSet=rs0
+      - MONGO_URI=mongodb://admin:tTFttAuchFoCEHttNHLfszk6@mongodb:27017/my-mongo-db?authSource=admin&replicaSet=rs0
     depends_on:
       - mongodb
       - mongodb-init

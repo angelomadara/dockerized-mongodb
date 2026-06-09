@@ -38,7 +38,7 @@ docker compose up -d
 Use the following connection string to connect via MongoDB Compass from your host machine:
 
 ```
-mongodb://admin:VaultTecSecurePass123@localhost:27018/?authSource=admin&directConnection=true
+mongodb://admin:tTFttAuchFoCEHttNHLfszk6@localhost:27018/?authSource=admin&directConnection=true
 ```
 
 > **Note:** The `directConnection=true` parameter is required because the replica set advertises `mongodb:27017` as its host (the Docker internal hostname), which your host machine can't resolve. This flag tells Compass to connect directly to `localhost:27018` without attempting to look up other replica set members. Do **not** include `replicaSet=rs0` together with `directConnection=true` — the two options are incompatible.
@@ -68,7 +68,7 @@ curl -X POST http://localhost:8081/transaction
 ### Inspecting the Replica Set
 To verify the replica set status:
 ```bash
-docker exec -it mongodb_service mongosh -u admin -p VaultTecSecurePass123 --eval "rs.status()"
+docker exec -it mongodb_service mongosh -u admin -p tTFttAuchFoCEHttNHLfszk6 --eval "rs.status()"
 ```
 
 ### Logs

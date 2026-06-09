@@ -4,7 +4,7 @@ const { MongoClient } = require('mongodb');
 const app = express();
 app.use(express.json());
 
-const uri = process.env.MONGO_URI || 'mongodb://admin:VaultTecSecurePass123@mongodb:27017/?authSource=admin&replicaSet=rs0';
+const uri = process.env.MONGO_URI || 'mongodb://admin:tTFttAuchFoCEHttNHLfszk6@mongodb:27017/?authSource=admin&replicaSet=rs0';
 const client = new MongoClient(uri);
 
 async function startApp() {
@@ -38,13 +38,13 @@ app.post('/transaction', async (req, res) => {
             
             await db.collection('accounts').updateOne(
                 { account: 'A' }, 
-                { $set: { balance: 100 } }, 
+                { $set: { balance: 10000 } }, 
                 { upsert: true, session }
             );
             
             await db.collection('accounts').updateOne(
                 { account: 'B' }, 
-                { $set: { balance: 200 } }, 
+                { $set: { balance: 20000 } }, 
                 { upsert: true, session }
             );
 
